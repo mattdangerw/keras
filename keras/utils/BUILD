@@ -1,8 +1,7 @@
 # Description:
 #   Contains the Keras Utilities (internal TensorFlow version).
 
-load("@org_keras//keras:keras.bzl", "tf_py_test")
-load("@org_keras//keras:keras.bzl", "cuda_py_test")
+load("@org_tensorflow//tensorflow:tensorflow.bzl", "cuda_py_test", "tf_py_test")
 
 package(
     # TODO(scottzhu): Remove non-keras deps from TF.
@@ -253,7 +252,7 @@ tf_py_test(
         "//keras:combinations",
         "//keras/distribute:multi_worker_testing_utils",
         "//keras/engine",
-        "//keras/layers:core",
+        "//keras/layers/core",
     ],
 )
 

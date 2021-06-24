@@ -90,19 +90,21 @@ from keras.layers.convolutional import Cropping2D
 from keras.layers.convolutional import Cropping3D
 
 # Core layers.
-from keras.layers.core import Masking
+from keras.layers.core.masking import Masking
 from keras.layers.core import Dropout
 from keras.layers.core import SpatialDropout1D
 from keras.layers.core import SpatialDropout2D
 from keras.layers.core import SpatialDropout3D
-from keras.layers.core import Activation
+from keras.layers.core.activation import Activation
 from keras.layers.core import Reshape
 from keras.layers.core import Permute
 from keras.layers.core import Flatten
 from keras.layers.core import RepeatVector
-from keras.layers.core import Lambda
-from keras.layers.core import Dense
+from keras.layers.core.lambda_layer import Lambda
+from keras.layers.core.dense import Dense
 from keras.layers.core import ActivityRegularization
+from keras.layers.core.instance_method import InstanceMethod
+from keras.layers.core.instance_property import InstanceProperty
 
 # Dense Attention layers.
 from keras.layers.dense_attention import AdditiveAttention

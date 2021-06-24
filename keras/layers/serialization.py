@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Layer serialization/deserialization functions.
-"""
+"""Layer serialization/deserialization functions."""
 
 import tensorflow.compat.v2 as tf
 # pylint: disable=wildcard-import
@@ -30,7 +29,6 @@ from keras.layers import core
 from keras.layers import cudnn_recurrent
 from keras.layers import dense_attention
 from keras.layers import einsum_dense
-from keras.layers import embeddings
 from keras.layers import local
 from keras.layers import merge
 from keras.layers import multi_head_attention
@@ -40,6 +38,7 @@ from keras.layers import recurrent
 from keras.layers import recurrent_v2
 from keras.layers import rnn_cell_wrapper_v2
 from keras.layers import wrappers
+from keras.layers import embeddings
 from keras.layers.normalization import batch_normalization
 from keras.layers.normalization import batch_normalization_v1
 from keras.layers.normalization import layer_normalization
@@ -59,8 +58,8 @@ from tensorflow.python.util.tf_export import keras_export
 ALL_MODULES = (base_layer, input_layer, advanced_activations, convolutional,
                convolutional_recurrent, core, cudnn_recurrent, dense_attention,
                embeddings, einsum_dense, local, merge, noise,
-               batch_normalization_v1, layer_normalization,
-               pooling, image_preprocessing, recurrent, wrappers, hashing,
+               batch_normalization_v1, layer_normalization, pooling,
+               image_preprocessing, recurrent, wrappers, hashing,
                category_crossing, category_encoding, discretization,
                multi_head_attention, integer_lookup,
                preprocessing_normalization, string_lookup, text_vectorization)
@@ -72,14 +71,14 @@ LOCAL = threading.local()
 
 
 def populate_deserializable_objects():
-  """Populates dict ALL_OBJECTS with every built-in layer.
-  """
+  """Populates dict ALL_OBJECTS with every built-in layer."""
   global LOCAL
   if not hasattr(LOCAL, 'ALL_OBJECTS'):
     LOCAL.ALL_OBJECTS = {}
     LOCAL.GENERATED_WITH_V2 = None
 
-  if LOCAL.ALL_OBJECTS and LOCAL.GENERATED_WITH_V2 == tf.__internal__.tf2.enabled():
+  if LOCAL.ALL_OBJECTS and LOCAL.GENERATED_WITH_V2 == tf.__internal__.tf2.enabled(
+  ):
     # Objects dict is already generated for the proper TF version:
     # do nothing.
     return
@@ -172,8 +171,8 @@ def deserialize(config, custom_objects=None):
 
   Args:
       config: dict of the form {'class_name': str, 'config': dict}
-      custom_objects: dict mapping class names (or function names)
-          of custom (non-Keras) objects to class/functions
+      custom_objects: dict mapping class names (or function names) of custom
+        (non-Keras) objects to class/functions
 
   Returns:
       Layer instance (may be Model, Sequential, Network, Layer...)
