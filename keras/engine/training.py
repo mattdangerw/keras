@@ -781,6 +781,8 @@ class Model(base_layer.Layer, version_utils.ModelVersionSelector):
       `tf.keras.callbacks.CallbackList.on_train_batch_end`. Typically, the
       values of the `Model`'s metrics are returned. Example:
       `{'loss': 0.2, 'accuracy': 0.7}`.
+    Raises:
+      A `ValueError` if a loss is not present at time of compilation.
 
     """
     # These are the only transformations `Model.fit` applies to user-input
@@ -792,6 +794,8 @@ class Model(base_layer.Layer, version_utils.ModelVersionSelector):
       y_pred = self(x, training=True)
       loss = self.compiled_loss(
           y, y_pred, sample_weight, regularization_losses=self.losses)
+    if not self.loss:
+      raise ValueError('Did you forget to provide a loss to `model.compile`?')
     # Run backwards pass.
     self.optimizer.minimize(loss, self.trainable_variables, tape=tape)
     self.compiled_metrics.update_state(y, y_pred, sample_weight)

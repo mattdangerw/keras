@@ -1726,6 +1726,18 @@ class TestExceptionsAndWarnings(keras_parameterized.TestCase):
           },
           run_eagerly=testing_utils.should_run_eagerly())
 
+  @keras_parameterized.run_all_keras_modes
+  @keras_parameterized.run_with_all_model_types
+  def test_fit_on_no_loss(self):
+    inputs = layers_module.Input((3,))
+    outputs = layers_module.Dense(2)(inputs)
+    model = training_module.Model(inputs, outputs)
+    model.compile('rmsprop')
+    x = np.zeros((32, 3))
+    with self.assertRaisesRegex(
+        ValueError, 'Did you forget to provide a loss to `model.compile`?'):
+      model.fit(x)
+
   @keras_parameterized.run_all_keras_modes(always_skip_v1=True)
   def test_predict_error_with_empty_x(self):
     inputs = layers_module.Input(shape=(2,))
