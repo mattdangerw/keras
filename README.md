@@ -5,26 +5,7 @@
 
 Keras 3 is a new multi-backend implementation of the Keras API, with support for TensorFlow, JAX, and PyTorch.
 
-## Installation
-
-### Install with pip
-
-Keras 3 is available as a preview release on PyPI named `keras-core`.
-Keras 2 (`tf.keras`) is distributed along with the `tensorflow` package.
-
-1. Install `keras-core`:
-
-```
-pip install keras-core
-```
-
-2. Install backend package(s).
-
-To use keras-core, you should also install the backend of choice: `tensorflow`, `jax`, or `torch`.
-Note that `tensorflow` is required for using certain Keras 3 features: certain preprocessing layers
-as well as `tf.data` pipelines.
-
-### Local installation
+## Local installation
 
 Keras 3 is compatible with Linux and MacOS systems. To install a local development version:
 
@@ -61,16 +42,16 @@ In Colab, you can do:
 import os
 os.environ["KERAS_BACKEND"] = "jax"
 
-import keras as keras
+import keras
 ```
 
-**Note:** The backend must be configured before importing `keras`, and the backend cannot be changed after 
+**Note:** The backend must be configured before importing `keras`, and the backend cannot be changed after
 the package has been imported.
 
 ## Backwards compatibility
 
 Keras 3 is intended to work as a drop-in replacement for `tf.keras` (when using the TensorFlow backend). Just take your
-existing `tf.keras` code, change the `keras` imports to `keras`, make sure that your calls to `model.save()` are using
+existing `tf.keras` code, change the `tf.keras` imports to `keras`, make sure that your calls to `model.save()` are using
 the up-to-date `.keras` format, and you're done.
 
 If your `tf.keras` model does not include custom components, you can start running it on top of JAX or PyTorch immediately.
@@ -83,7 +64,7 @@ you can train your models with your existing `tf.data.Dataset` pipelines or PyTo
 
 ## Keras 3 timeline
 
-At the moment, we are releasing Keras 3 as a preview release with under the `keras-core` name on PyPI. We encourage anyone
+At the moment, Keras 3 available here as a preview. We encourage anyone
 interested in the future of the library to try it out and give feedback.
 
 You can find the current stable release of Keras 2 at the [tf-keras](https://github.com/keras-team/tf-keras) repository.
