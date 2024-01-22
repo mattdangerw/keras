@@ -34,6 +34,8 @@ class Variable(KerasVariable):
         self._direct_assign(value)
 
     def _direct_assign(self, value):
+        self._value = None
+        value = self._convert_to_tensor(value, dtype=self.dtype)
         if getattr(self, "_layout", None) is not None:
             value = distribution_lib.distribute_variable(value, self._layout)
         self._value = value

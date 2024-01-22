@@ -99,6 +99,7 @@ class Variable(KerasVariable):
             ).to(get_device())
 
     def _direct_assign(self, value):
+        value = self._convert_to_tensor(value, dtype=self.dtype)
         with torch.no_grad():
             self.value.copy_(value)
 

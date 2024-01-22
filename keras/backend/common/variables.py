@@ -130,7 +130,6 @@ class KerasVariable:
         return self._maybe_autocast(self._value)
 
     def assign(self, value):
-        value = self._convert_to_tensor(value, dtype=self.dtype)
         if not shape_equal(value.shape, self.shape):
             raise ValueError(
                 "The shape of the target variable and "
@@ -141,6 +140,7 @@ class KerasVariable:
                 f"Target variable: {self}"
             )
         if in_stateless_scope():
+            value = self._convert_to_tensor(value, dtype=self.dtype)
             scope = get_stateless_scope()
             scope.add_update((self, value))
         else:
