@@ -45,6 +45,7 @@ class Variable(KerasVariable):
         if self._value is not None and sys.getrefcount(self._value) <= 2:
             print("DELETE", self.path)
             self._value.delete()
+        value = convert_to_tensor(value, dtype=self._dtype)
         if getattr(self, "_layout", None) is not None:
             value = distribution_lib.distribute_variable(value, self._layout)
         self._value = value
