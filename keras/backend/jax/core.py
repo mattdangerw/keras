@@ -37,7 +37,10 @@ class Variable(KerasVariable):
     def _direct_assign(self, value):
         if getattr(self, "_layout", None) is not None:
             value = distribution_lib.distribute_variable(value, self._layout)
-        self._value = value
+        if self._value is not None:
+            self._value = jax.jit(lambda x, y: x.at[...].set(y), donate_argnums=0)(self._value, value)
+        else:
+            self._value = value
 
     def _convert_to_tensor(self, value, dtype=None):
         return convert_to_tensor(value, dtype=dtype)
