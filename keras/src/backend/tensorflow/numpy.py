@@ -1953,6 +1953,14 @@ def take(x, indices, axis=None):
         output.set_shape(indices.shape + output.shape[len(indices.shape) :])
         return output
 
+    if axis == 0 and tf.distribute.has_strategy():
+        # Allow embeddings to work under a tf.distrubition strategy.
+        # Ideally, this would be handle directly by tf compilation, but today
+        # that is not the case. See
+        # https://github.com/keras-team/keras/issues/19809 for more details.
+        one_hot = tf.one_hot(indices, depth=tf.shape(x)[0], dtype=x.dtype)
+        return tf.matmul(one_hot, x)
+
     x = convert_to_tensor(x)
     indices = convert_to_tensor(indices)
     if axis is None:

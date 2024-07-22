@@ -69,6 +69,25 @@ class EmbeddingTest(test_case.TestCase, parameterized.TestCase):
         self.assertAllClose(out, np.array([[3.0, 3.0], [2.0, 2.0], [0.0, 0.0]]))
 
     @pytest.mark.skipif(
+        backend.backend() != "tensorflow",
+        reason="Tensorflow only test.",
+    )
+    def test_distribute_strategy(self):
+        import tensorflow as tf
+
+        with tf.distribute.MirroredStrategy().scope():
+            layer = layers.Embedding(input_dim=3, output_dim=1)
+            # Try calling fit()
+            x = np.random.randint(0, 3, (64,))
+            y = np.random.random((64, 1))
+            model = models.Sequential([layer])
+            model.compile(optimizer="sgd", loss="mse", jit_compile=True)
+            model.fit(x, y, epochs=2, batch_size=4)
+            layer.embeddings.assign(np.array([[0.0], [1.0], [2.0]]))
+            out = layer(np.array([2, 1, 0]))
+            self.assertAllClose(out, np.array([[2.0], [1.0], [0.0]]))
+
+    @pytest.mark.skipif(
         not backend.SUPPORTS_SPARSE_TENSORS,
         reason="Backend does not support sparse tensors.",
     )
