@@ -3,7 +3,6 @@ import builtins
 import numpy as np
 import optree
 import tensorflow as tf
-from tensorflow.compiler.tf2xla.python.xla import dynamic_update_slice
 
 from keras.src import tree
 from keras.src.backend.common import KerasVariable
@@ -547,7 +546,11 @@ def slice(inputs, start_indices, shape):
 
 
 def slice_update(inputs, start_indices, updates):
-    return dynamic_update_slice(inputs, updates, start_indices)
+    start_indices = tf.convert_to_tensor(start_indices)
+    indices = tf.cast(tf.where(tf.ones_like(updates)), "int32")
+    indices = indices + tf.cast(tf.expand_dims(start_indices, 0), "int32")
+    updates = tf.reshape(updates, [-1])
+    return tf.tensor_scatter_nd_update(inputs, indices, updates)
 
 
 def switch(index, branches, *operands):
