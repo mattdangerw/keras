@@ -2,10 +2,12 @@ import copy
 import inspect
 import typing
 import warnings
+from functools import wraps
 
 from keras.src import backend
 from keras.src import ops
 from keras.src import tree
+from keras.src.api_export import keras_export
 from keras.src.backend.common import global_state
 from keras.src.layers.core.input_layer import Input
 from keras.src.layers.core.input_layer import InputLayer
@@ -21,9 +23,12 @@ from keras.src.ops.node import KerasHistory
 from keras.src.ops.node import Node
 from keras.src.ops.operation import Operation
 from keras.src.saving import serialization_lib
+from keras.src.utils import default
+from keras.src.utils import is_default
 from keras.src.utils import tracking
 
 
+@keras_export(["keras.Functional", "keras.models.Functional"])
 class Functional(Function, Model):
     """A `Functional` model is a `Model` defined as a directed graph of layers.
 
@@ -97,10 +102,68 @@ class Functional(Function, Model):
     """
 
     def __new__(cls, *args, **kwargs):
-        return typing.cast(cls, super().__new__(cls))
+        obj = typing.cast(cls, super().__new__(cls))
+
+        # Wrap functional_build the same as build in layer.py.
+        original_build_method = obj.functional_build
+
+        @wraps(original_build_method)
+        def build_wrapper(inputs, *args, **kwargs):
+            outputs = original_build_method(inputs, *args, **kwargs)
+            obj._set_function(inputs, outputs)
+
+        obj.functional_build = build_wrapper
+        return obj
 
     @tracking.no_automatic_dependency_tracking
-    def __init__(self, inputs, outputs, name=None, **kwargs):
+    def __init__(self, inputs=None, outputs=None, **kwargs):
+        Layer.__init__(self, **kwargs)
+        # We will convert directly (to the correct dtype per input).
+        self._convert_input_args = False
+        self._allow_non_tensor_positional_args = True
+        # The common way of creating a Functional model without a subclass.
+        if inputs is not None and outputs is not None:
+            self._set_function(inputs, outputs)
+        # New more readable subclassed functional approach with dynamic input.
+        elif is_default(self.functional_build):
+            raise ValueError(
+                "You must either provide `inputs` and `outputs` to the "
+                "Functional model constructor or define a `functional_build` "
+                "method."
+            )
+
+    @default
+    def functional_build(self, inputs):
+        pass
+
+    def _maybe_build(self, call_spec):
+        if self.built:
+            return
+
+        def to_functional_input(v):
+            shape, dtype = v.shape, v.dtype
+            if not isinstance(v, backend.KerasTensor):
+                dtype = backend.standardize_dtype(dtype)
+                shape = backend.standardize_shape(shape)
+            shape = shape[1:]
+            # TODO: think about type conversions here.
+            input = Input(
+                shape=shape,
+                dtype=dtype,
+                name=self.name + "_input",
+            )
+            return input
+
+        # TODO: Error if more than one positional arg?
+        k, v = next(iter(call_spec.arguments_dict.items()))
+        if k in call_spec.nested_tensor_argument_names:
+            inputs = tree.map_structure(to_functional_input(v), v)
+        else:
+            inputs = to_functional_input(v)
+        self.functional_build(inputs)
+
+    @tracking.no_automatic_dependency_tracking
+    def _set_function(self, inputs, outputs):
         if isinstance(inputs, dict):
             for k, v in inputs.items():
                 if isinstance(v, backend.KerasTensor) and k != v.name:
@@ -112,7 +175,6 @@ class Functional(Function, Model):
                         f"'{k}' (via `Input(..., name='{k}')`)"
                     )
 
-        trainable = kwargs.pop("trainable", None)
         flat_inputs = tree.flatten(inputs)
         flat_outputs = tree.flatten(outputs)
         for x in flat_inputs:
@@ -133,16 +195,10 @@ class Functional(Function, Model):
         if not all(is_input_keras_tensor(t) for t in flat_inputs):
             inputs, outputs = clone_graph_nodes(inputs, outputs)
 
-        Function.__init__(self, inputs, outputs, name=name)
-
-        if trainable is not None:
-            self.trainable = trainable
+        Function.__init__(self, inputs, outputs, name=self.name)
 
         self._layers = self.layers
-        self.build(None)
-        # We will convert directly (to the correct dtype per input).
-        self._convert_input_args = False
-        self._allow_non_tensor_positional_args = True
+        self.built = True
         output_layers = [x._keras_history[0] for x in self.outputs]
         self.output_names = [x.name for x in output_layers]
 
@@ -338,6 +394,9 @@ class Functional(Function, Model):
 
     @property
     def input_spec(self):
+        if not self.built:
+            return None
+
         if hasattr(self, "_manual_input_spec"):
             return self._manual_input_spec
 
