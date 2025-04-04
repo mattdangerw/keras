@@ -47,6 +47,7 @@ from keras.src.layers.input_spec import InputSpec
 from keras.src.layers.layer import Layer
 from keras.src.losses.loss import Loss
 from keras.src.metrics.metric import Metric
+from keras.src.models.functional import Functional
 from keras.src.models.model import Model
 from keras.src.models.sequential import Sequential
 from keras.src.ops.function import Function

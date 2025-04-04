@@ -227,13 +227,13 @@ class Layer(BackendLayer, Operation, KerasSaveable):
         def build_wrapper(*args, **kwargs):
             with obj._open_name_scope():
                 obj._path = current_path()
-                original_build_method(*args, **kwargs)
+                ret = original_build_method(*args, **kwargs)
             # Record build config.
             signature = inspect.signature(original_build_method)
             obj._build_shapes_dict = signature.bind(*args, **kwargs).arguments
             # Set built, post build actions, and lock state.
             obj.built = True
-            obj._post_build()
+            obj._post_build(ret) if ret else obj._post_build()
             obj._lock_state()
 
         obj.build = build_wrapper
@@ -832,15 +832,15 @@ class Layer(BackendLayer, Operation, KerasSaveable):
         # Caches info about `call()` signature, args, kwargs.
         call_spec = CallSpec(self._call_signature, args, kwargs)
 
-        ############################################
-        # 3. Check input spec for 1st positional arg.
-        # TODO: consider extending this to all args and kwargs.
-        self._assert_input_compatibility(call_spec.first_arg)
-
         ################
-        # 4. Call build
+        # 3. Call build
         with self._open_name_scope():
             self._maybe_build(call_spec)
+
+        ############################################
+        # 4. Check input spec for 1st positional arg.
+        # TODO: consider extending this to all args and kwargs.
+        self._assert_input_compatibility(call_spec.first_arg)
 
         ##########################
         # 5. Infer training value
