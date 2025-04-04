@@ -832,15 +832,15 @@ class Layer(BackendLayer, Operation, KerasSaveable):
         # Caches info about `call()` signature, args, kwargs.
         call_spec = CallSpec(self._call_signature, args, kwargs)
 
-        ############################################
-        # 3. Check input spec for 1st positional arg.
-        # TODO: consider extending this to all args and kwargs.
-        self._assert_input_compatibility(call_spec.first_arg)
-
         ################
-        # 4. Call build
+        # 3. Call build
         with self._open_name_scope():
             self._maybe_build(call_spec)
+
+        ############################################
+        # 4. Check input spec for 1st positional arg.
+        # TODO: consider extending this to all args and kwargs.
+        self._assert_input_compatibility(call_spec.first_arg)
 
         ##########################
         # 5. Infer training value

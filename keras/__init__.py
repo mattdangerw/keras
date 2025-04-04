@@ -2,6 +2,7 @@
 from keras.api import DTypePolicy
 from keras.api import FloatDTypePolicy
 from keras.api import Function
+from keras.api import Functional
 from keras.api import Initializer
 from keras.api import Input
 from keras.api import InputSpec

@@ -6,6 +6,7 @@ import warnings
 from keras.src import backend
 from keras.src import ops
 from keras.src import tree
+from keras.src.api_export import keras_export
 from keras.src.backend.common import global_state
 from keras.src.layers.core.input_layer import Input
 from keras.src.layers.core.input_layer import InputLayer
@@ -24,6 +25,7 @@ from keras.src.saving import serialization_lib
 from keras.src.utils import tracking
 
 
+@keras_export(["keras.Functional", "keras.models.Functional"])
 class Functional(Function, Model):
     """A `Functional` model is a `Model` defined as a directed graph of layers.
 
@@ -100,7 +102,16 @@ class Functional(Function, Model):
         return typing.cast(cls, super().__new__(cls))
 
     @tracking.no_automatic_dependency_tracking
-    def __init__(self, inputs, outputs, name=None, **kwargs):
+    def __init__(self, inputs=None, outputs=None, **kwargs):
+        Layer.__init__(self, **kwargs)
+        # We will convert directly (to the correct dtype per input).
+        self._convert_input_args = False
+        self._allow_non_tensor_positional_args = True
+        if inputs is not None and outputs is not None:
+            self.set_function(inputs, outputs)
+
+    @tracking.no_automatic_dependency_tracking
+    def set_function(self, inputs, outputs):
         if isinstance(inputs, dict):
             for k, v in inputs.items():
                 if isinstance(v, backend.KerasTensor) and k != v.name:
@@ -112,7 +123,6 @@ class Functional(Function, Model):
                         f"'{k}' (via `Input(..., name='{k}')`)"
                     )
 
-        trainable = kwargs.pop("trainable", None)
         flat_inputs = tree.flatten(inputs)
         flat_outputs = tree.flatten(outputs)
         for x in flat_inputs:
@@ -133,16 +143,10 @@ class Functional(Function, Model):
         if not all(is_input_keras_tensor(t) for t in flat_inputs):
             inputs, outputs = clone_graph_nodes(inputs, outputs)
 
-        Function.__init__(self, inputs, outputs, name=name)
-
-        if trainable is not None:
-            self.trainable = trainable
+        Function.__init__(self, inputs, outputs, name=self.name)
 
         self._layers = self.layers
-        self.build(None)
-        # We will convert directly (to the correct dtype per input).
-        self._convert_input_args = False
-        self._allow_non_tensor_positional_args = True
+        self.built = True
         output_layers = [x._keras_history[0] for x in self.outputs]
         self.output_names = [x.name for x in output_layers]
 

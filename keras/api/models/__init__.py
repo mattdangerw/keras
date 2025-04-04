@@ -5,6 +5,7 @@ since your modifications would be overwritten.
 """
 
 from keras.src.models.cloning import clone_model
+from keras.src.models.functional import Functional
 from keras.src.models.model import Model
 from keras.src.models.model import model_from_json
 from keras.src.models.sequential import Sequential
