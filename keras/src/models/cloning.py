@@ -2,6 +2,7 @@ from keras.src import backend
 from keras.src import tree
 from keras.src import utils
 from keras.src.api_export import keras_export
+from keras.src.backend.common.clone_scope import CloneScope
 from keras.src.layers import Input
 from keras.src.layers import InputLayer
 from keras.src.models.functional import Functional
@@ -408,6 +409,10 @@ def _clone_functional_model(
         new_model = model.__class__(
             input_tensors, output_tensors, name=model.name
         )
+    elif not utils.is_default(model.functional_build):
+        with CloneScope():
+            new_model = model.__class__.from_config(model.get_config())
+            new_model._set_function(input_tensors, output_tensors)
     else:
         # This may be incorrect: the new model will end up having a different
         # class than the original. However various existing models rely

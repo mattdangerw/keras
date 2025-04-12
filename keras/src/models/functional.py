@@ -9,6 +9,7 @@ from keras.src import ops
 from keras.src import tree
 from keras.src.api_export import keras_export
 from keras.src.backend.common import global_state
+from keras.src.backend.common.clone_scope import in_clone_scope
 from keras.src.layers.core.input_layer import Input
 from keras.src.layers.core.input_layer import InputLayer
 from keras.src.layers.input_spec import InputSpec
@@ -109,8 +110,9 @@ class Functional(Function, Model):
 
         @wraps(original_build_method)
         def build_wrapper(inputs, *args, **kwargs):
-            outputs = original_build_method(inputs, *args, **kwargs)
-            obj._set_function(inputs, outputs)
+            if not in_clone_scope():
+                outputs = original_build_method(inputs, *args, **kwargs)
+                obj._set_function(inputs, outputs)
 
         obj.functional_build = build_wrapper
         return obj
