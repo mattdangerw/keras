@@ -35,17 +35,18 @@ dependencies = [
     "ml-dtypes",
     "packaging",
 ]
-# Run also: pip install -r requirements.txt
+# For a complete development environment run: pip install -r requirements.txt
 
 [project.urls]
 Home = "https://keras.io/"
 Repository = "https://github.com/keras-team/keras"
 
+[tool.setuptools]
+package-dir = {"keras" = "keras/api", "keras.src" = "keras/src"}
+packages = ["keras", "keras.src"]
+
 [tool.setuptools.dynamic]
 version = {attr = "keras.src.version.__version__"}
-
-[tool.setuptools.packages.find]
-include = ["keras", "keras.*"]
 
 [tool.ruff]
 line-length = 80
