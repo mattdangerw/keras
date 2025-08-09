@@ -428,7 +428,10 @@ class RNN(Layer):
             output = last_output
 
         if self.return_state:
-            return output, *states
+            if tree.is_nested(states):
+                return output, *states
+            else:
+                return output, states
         return output
 
     def _maybe_config_dropout_masks(self, cell, input_sequence, input_state):
