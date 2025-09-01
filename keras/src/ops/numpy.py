@@ -1780,12 +1780,14 @@ class BroadcastTo(Operation):
         self.shape = shape
 
     def call(self, x):
-        return backend.numpy.broadcast_to(x, self.shape)
+        # self.shape might be symbolic, so we determine it
+        output_shape = broadcast_shapes(x.shape, self.shape)
+        return backend.numpy.broadcast_to(x, output_shape)
 
     def compute_output_spec(self, x):
         # Catch broadcasting errors for clear error messages.
-        broadcast_shapes(x.shape, self.shape)
-        return KerasTensor(self.shape, dtype=x.dtype)
+        output_shape = broadcast_shapes(x.shape, self.shape)
+        return KerasTensor(output_shape, dtype=x.dtype)
 
 
 @keras_export(
